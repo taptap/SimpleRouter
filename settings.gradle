@@ -1,0 +1,4 @@
+include ':app'
+include ':RouterApi'
+include ':RouterAnnotation'
+include ':RouterCompile'
