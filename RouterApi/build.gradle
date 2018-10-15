@@ -1,5 +1,12 @@
 apply plugin: 'com.android.library'
 
+ext {
+    groupId = 'com.taptpa.router'
+    version = '1.0.0'
+    artifactId = 'RouterApi'
+}
+apply from: '../mvnxmxdev.gradle'
+
 android {
     compileSdkVersion versions.compileSdk
 

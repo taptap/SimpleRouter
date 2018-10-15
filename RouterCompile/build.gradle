@@ -1,5 +1,12 @@
 apply plugin: 'java-library'
 
+ext {
+    groupId = 'com.taptpa.router'
+    version = '1.0.0'
+    artifactId = 'RouterCompile'
+}
+apply from: '../mvnxmxdev.gradle'
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':RouterAnnotation')
