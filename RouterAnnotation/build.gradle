@@ -1,9 +1,11 @@
 apply plugin: 'java-library'
 
 ext {
-    groupId = 'com.taptpa.router'
-    version = '1.0.0'
-    artifactId = 'RouterAnnotation'
+    mpom = [
+            "groupId":"com.taptap.router",
+            "version":"1.0.0",
+            "artifactId":"RouterAnnotation"
+    ]
 }
 apply from: '../mvnxmxdev.gradle'
 

@@ -1,17 +1,16 @@
 apply plugin: 'com.android.library'
 
 ext {
-    groupId = 'com.taptpa.router'
-    version = '1.0.0'
-    artifactId = 'RouterApi'
+    mpom = [
+            "groupId":"com.taptap.router",
+            "version":"1.0.0",
+            "artifactId":"RouterApi"
+    ]
 }
 apply from: '../mvnxmxdev.gradle'
 
 android {
     compileSdkVersion versions.compileSdk
-
-
-
     defaultConfig {
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
@@ -33,7 +32,5 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    implementation "com.android.support:appcompat-v7:${versions.support}"
-    api project(":RouterAnnotation")
+    api "com.taptap.router:RouterAnnotation:1.0.0"
 }

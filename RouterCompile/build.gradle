@@ -1,15 +1,18 @@
 apply plugin: 'java-library'
 
 ext {
-    groupId = 'com.taptpa.router'
-    version = '1.0.0'
-    artifactId = 'RouterCompile'
+    mpom = [
+            "groupId":"com.taptap.router",
+            "version":"1.0.0",
+            "artifactId":"RouterCompile"
+    ]
 }
+
 apply from: '../mvnxmxdev.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':RouterAnnotation')
+    implementation 'com.taptap.router:RouterAnnotation:1.0.0'
     implementation 'com.squareup:javapoet:1.11.1'
     implementation 'com.google.auto.service:auto-service:1.0-rc2'
 }

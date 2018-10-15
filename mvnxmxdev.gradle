@@ -1,6 +1,6 @@
 apply plugin: 'maven'
 
-
+println mpom.groupId
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 def mvn_user = properties.getProperty('mvn_user')
@@ -13,8 +13,8 @@ uploadArchives {
             authentication(userName: mvn_user, password: mvn_password)
         }
 
-        pom.version = version
-        pom.artifactId = artifactId
-        pom.groupId = groupId
+        pom.version = mpom.version
+        pom.artifactId = mpom.artifactId
+        pom.groupId = mpom.groupId
     }
 }
