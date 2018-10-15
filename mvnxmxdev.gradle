@@ -1,0 +1,20 @@
+apply plugin: 'maven'
+
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def mvn_user = properties.getProperty('mvn_user')
+def mvn_password = properties.getProperty('mvn_password')
+def mvn_url = properties.getProperty('mvn_url')
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: mvn_url) {
+            authentication(userName: mvn_user, password: mvn_password)
+        }
+
+        pom.version = version
+        pom.artifactId = artifactId
+        pom.groupId = groupId
+    }
+}
