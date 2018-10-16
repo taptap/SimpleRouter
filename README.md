@@ -11,3 +11,9 @@ Router for android!
             .addString("name", "TapTap")
             .build().navigate(MainActivity.this, null);
 ```
+
+## Proguard
+```
+-kee class **$$RouteInjector
+-keep class **AllRoutes
+```
