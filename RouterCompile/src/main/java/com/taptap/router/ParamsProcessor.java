@@ -26,6 +26,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -40,10 +41,8 @@ public class ParamsProcessor extends AbstractProcessor {
 
   Filer filer = null;
 
-  /**
-   * 页面跳转参数
-   */
-  private HashMap<Element, List<Element>> pageParams = new HashMap<>();
+  private List<TypeElement> paramsClass = new ArrayList<>();
+
   private Elements elementUtils = null;
   private Types typeUtils = null;
 
@@ -70,12 +69,12 @@ public class ParamsProcessor extends AbstractProcessor {
     while (iterator.hasNext()) {
       Element next = iterator.next();
       Element key = next.getEnclosingElement();
-      if (!pageParams.containsKey(key)) {
-        pageParams.put(key, new ArrayList<Element>());
+
+      if (!paramsClass.contains(key)) {
+        paramsClass.add((TypeElement) key);
       }
-      pageParams.get(key).add(next);
     }
-    if (pageParams.size() > 0) {
+    if (paramsClass.size() > 0) {
       processParams();
       return true;
     }
@@ -83,13 +82,8 @@ public class ParamsProcessor extends AbstractProcessor {
   }
 
   void processParams() {
-
-    Set<Entry<Element, List<Element>>> entries = pageParams.entrySet();
-    Iterator<Entry<Element, List<Element>>> iterator = entries.iterator();
-    while (iterator.hasNext()) {
-      Entry<Element, List<Element>> next = iterator.next();
-      TypeElement taregetPageElement = (TypeElement) next.getKey();
-
+    for (int i = 0; i < paramsClass.size(); i++) {
+      TypeElement taregetPageElement = paramsClass.get(i);
       String targetPageName = taregetPageElement.getQualifiedName().toString();
       String packageName = targetPageName.substring(0, targetPageName.lastIndexOf("."));
 
@@ -121,68 +115,65 @@ public class ParamsProcessor extends AbstractProcessor {
             .endControlFlow();
 
       } else {
-
         // argument = target.getArguments()
         methodBlock.addStatement("argument = target.getArguments()");
       }
 
-      List<Element> value = next.getValue();
-      for (int i = 0; i < value.size(); i++) {
+      List<? extends Element> allElement = getAllElement(taregetPageElement);
+      for (int m = 0; null != allElement && m < allElement.size(); m++) {
+        if (allElement.get(m).getKind() == ElementKind.FIELD) {
+          VariableElement element = (VariableElement) allElement.get(m);
+          TapRouteParams annotation = element.getAnnotation(TapRouteParams.class);
+          if (null != annotation) {
+            String[] paramKeys = annotation.value();
 
-        VariableElement element = (VariableElement) value.get(i);
-        TapRouteParams annotation = element.getAnnotation(TapRouteParams.class);
-        if (null == annotation) {
-          throw new RuntimeException(
-              element.toString() + " not found annotation in " + targetPageName);
-        }
-        String[] paramKeys = annotation.value();
+            for (int k = 0; k < paramKeys.length; k++) {
+              String paramKey = paramKeys[k];
+              TypeMirror typeMirror = element.asType();
 
-        for (int k = 0; k < paramKeys.length; k++) {
-
-          String paramKey = paramKeys[k];
-          TypeMirror typeMirror = element.asType();
-
-          methodBlock.beginControlFlow("if (null != argument && argument.containsKey($S))", paramKey);
-          methodBlock.addStatement("Object value = argument.get($S)", paramKey);
-          switch (typeMirror.toString()) {
-            case "int":
-              methodBlock.addStatement("target." + element.getSimpleName().toString()
-                  + " = Integer.parseInt(\"\" + value.toString())");
-              break;
-            case "long":
-              methodBlock.addStatement("target." + element.getSimpleName().toString()
-                  + " = Long.parseLong(\"\" + value.toString())");
-              break;
-            case "boolean":
-              methodBlock.addStatement("target." + element.getSimpleName().toString()
-                  + " = Boolean.parseBoolean(\"\" + value.toString())");
-              break;
-            case "java.lang.String":
-              methodBlock.addStatement(
-                  "target." + element.getSimpleName().toString() + " = value.toString()");
-              break;
-            default:
-              TypeElement parcelable = (TypeElement) typeUtils.asElement(typeMirror);
-              List<? extends TypeMirror> interfaces = parcelable.getInterfaces();
-              boolean isParcelable = false;
-              if (parcelable.asType().toString().equals("android.os.Parcelable")) {
-                isParcelable = true;
-              } else if (null != interfaces && interfaces.size() > 0) {
-                for (int j = 0; j < interfaces.size(); j++) {
-                  TypeMirror type = interfaces.get(j);
-                  if (type.toString().equals("android.os.Parcelable")) {
+              methodBlock.beginControlFlow("if (null != argument && argument.containsKey($S))", paramKey);
+              methodBlock.addStatement("Object value = argument.get($S)", paramKey);
+              switch (typeMirror.toString()) {
+                case "int":
+                  methodBlock.addStatement("target." + element.getSimpleName().toString()
+                      + " = Integer.parseInt(\"\" + value.toString())");
+                  break;
+                case "long":
+                  methodBlock.addStatement("target." + element.getSimpleName().toString()
+                      + " = Long.parseLong(\"\" + value.toString())");
+                  break;
+                case "boolean":
+                  methodBlock.addStatement("target." + element.getSimpleName().toString()
+                      + " = Boolean.parseBoolean(\"\" + value.toString())");
+                  break;
+                case "java.lang.String":
+                  methodBlock.addStatement(
+                      "target." + element.getSimpleName().toString() + " = value.toString()");
+                  break;
+                default:
+                  TypeElement parcelable = (TypeElement) typeUtils.asElement(typeMirror);
+                  List<? extends TypeMirror> interfaces = parcelable.getInterfaces();
+                  boolean isParcelable = false;
+                  if (parcelable.asType().toString().equals("android.os.Parcelable")) {
                     isParcelable = true;
+                  } else if (null != interfaces && interfaces.size() > 0) {
+                    for (int j = 0; j < interfaces.size(); j++) {
+                      TypeMirror type = interfaces.get(j);
+                      if (type.toString().equals("android.os.Parcelable")) {
+                        isParcelable = true;
+                      }
+                    }
                   }
-                }
+                  if (isParcelable) {
+                    methodBlock.addStatement(
+                        "target." + element.getSimpleName().toString() + " = argument.getParcelable($S)",
+                        paramKey);
+                  }
+                  break;
               }
-              if (isParcelable) {
-                methodBlock.addStatement(
-                    "target." + element.getSimpleName().toString() + " = argument.getParcelable($S)",
-                    paramKey);
-              }
-              break;
+              methodBlock.endControlFlow();
+            }
           }
-          methodBlock.endControlFlow();
         }
       }
 
@@ -204,6 +195,25 @@ public class ParamsProcessor extends AbstractProcessor {
         e.printStackTrace();
       }
     }
+  }
+
+  public List<? extends Element> getAllElement(TypeElement element){
+    ArrayList<Element> result = new ArrayList<>();
+    TypeElement typeElement = element;
+    while (typeElement != null) {
+      List<? extends Element> tmp = typeElement.getEnclosedElements();
+      if (null != tmp) {
+        result.addAll(tmp);
+      }
+      TypeMirror superclass = typeElement.getSuperclass();
+      if (superclass.toString().equals("java.lang.Object")) {
+        typeElement  = null;
+      } else {
+        typeElement = (TypeElement) typeUtils.asElement(superclass);
+      }
+    }
+
+    return result;
   }
 }
 

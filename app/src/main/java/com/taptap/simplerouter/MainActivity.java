@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
       public void onClick(View v) {
         new Navigator.Builder()
             .path("/test")
+            .referer("sssssss")
             .addString("name", "TapTap_new")
             .build().navigate(MainActivity.this, null);
       }

@@ -8,7 +8,7 @@ import com.taptap.annotation.TapRouteParams;
 import com.taptap.router.api.RouterManager;
 
 @TapRoute(path = "/test")
-public class TestActivity extends AppCompatActivity {
+public class TestActivity extends BaseAct {
 
   @TapRouteParams("name")
   String name;
@@ -20,7 +20,7 @@ public class TestActivity extends AppCompatActivity {
 
     setContentView(R.layout.activity_test);
 
-    ((TextView) findViewById(R.id.test_text)).setText(name);
+    ((TextView) findViewById(R.id.test_text)).setText(name + referer);
 
 
   }
