@@ -133,6 +133,7 @@ public class ParamsProcessor extends AbstractProcessor {
 
               methodBlock.beginControlFlow("if (null != argument && argument.containsKey($S))", paramKey);
               methodBlock.addStatement("Object value = argument.get($S)", paramKey);
+              methodBlock.beginControlFlow("if (null != value) ");
               switch (typeMirror.toString()) {
                 case "int":
                   methodBlock.addStatement("target." + element.getSimpleName().toString()
@@ -171,6 +172,7 @@ public class ParamsProcessor extends AbstractProcessor {
                   }
                   break;
               }
+              methodBlock.endControlFlow();
               methodBlock.endControlFlow();
             }
           }
